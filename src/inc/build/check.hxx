@@ -3,7 +3,10 @@
 
 namespace g::build {
 struct _Check_fn {
-    bool operator()(const g::SourceInfo& sourceInfo) const {
+    bool operator()(const std::string& jobName, const g::SourceInfo& sourceInfo) const {
+        CoutItem(jobName + "信息:");
+        CoutSourceInfo(sourceInfo);
+
         return true;
     }
 };

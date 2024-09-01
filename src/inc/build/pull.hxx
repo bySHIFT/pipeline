@@ -10,13 +10,13 @@ void Pull(g::SourceInfo& sourceInfo) {
 } // end internal namespace
 
 struct _Pull_fn {
-    bool operator()(g::SourceInfo& sourceInfo) const {
+    bool operator()(const std::string& jobName, g::SourceInfo& sourceInfo) const {
         if (!sourceInfo.branchName)
             return false;
 
-        CoutItem("构建指定分支: " + *sourceInfo.branchName);
+        CoutItem(jobName + "分支: " + *sourceInfo.branchName);
         internal::Pull(sourceInfo);
-        CoutItem("获取指定分支后信息:");
+        CoutItem(jobName + "分支后信息:");
         CoutSourceInfo(sourceInfo);
 
         return true;

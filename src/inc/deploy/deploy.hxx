@@ -4,8 +4,8 @@
 
 namespace g::deploy {
 struct _Deploy_fn {
-    bool operator()(const std::string_view& description
-        , const g::SourceInfo& sourceInfo
+    bool operator()(const std::string& jobName, const std::string_view& description
+        , const OptString& pushId
         ) const {
         return true;
     }

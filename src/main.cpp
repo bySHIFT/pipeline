@@ -4,7 +4,7 @@
 
 class Stage {
 public:
-    using TypeJobOperator = std::function<bool()>;
+    using TypeJobOperator = std::function<bool(const std::string& /*jobName*/)>;
     using TypeNamedJobOperator = std::pair<std::string, TypeJobOperator>;
     using TypeJobNamedOperators = std::vector<TypeNamedJobOperator>;
 
@@ -12,18 +12,19 @@ public:
     }
 
     template<typename _Callable, typename... _Args>
-        requires std::invocable<_Callable&, _Args...>
-            && IsAnyOf<std::invoke_result_t<_Callable&, _Args...>, bool, void>
+        requires std::invocable<_Callable&, const std::string&, _Args...>
+            && IsAnyOf<std::invoke_result_t<_Callable&, const std::string&/*jobName*/, _Args...>
+                , bool, void>
     decltype(auto) Job(const std::string& jobName
         , _Callable&& obj, _Args&&... args
     ) {
-        if constexpr (std::is_same_v<std::invoke_result_t<_Callable&, _Args...>, bool>) {
-            jobOperators.emplace_back(jobName, [&]() {
-                return std::invoke(std::forward<_Callable>(obj)
+        if constexpr (std::is_same_v<std::invoke_result_t<_Callable&, const std::string&, _Args...>, bool>) {
+            jobOperators.emplace_back(jobName, [&](const std::string& jobName) {
+                return std::invoke(std::forward<_Callable>(obj), jobName
                     , std::forward<_Args>(args)...); });
         } else {
-            jobOperators.emplace_back(jobName, [&]() {
-                std::invoke(std::forward<_Callable>(obj)
+            jobOperators.emplace_back(jobName, [&](const std::string& jobName) {
+                std::invoke(std::forward<_Callable>(obj), jobName
                     , std::forward<_Args>(args)...); });
             return true;
         }
@@ -39,7 +40,7 @@ public:
         std::size_t idx = 0;
         for (const auto& job : jobOperators) {
             g::CoutJob(job.first, ++idx, cnt);
-            if (!job.second())
+            if (!job.second(job.first))
                 return false;
         }
         return true;
@@ -91,12 +92,12 @@ int main() {
             .Job("代码构建", Build, srcInfo)
             .Job("推送构建结果", Push, srcInfo))
         .Stages(Stage{ "测试" }
-            .Job("测试工程: X-59", Test, 2021, "X-59: QueSST 洛克希德·马丁", srcInfo)
-            .Job("测试工程: CH-47", Test, 1956, "CH-47: Chinook 波音", srcInfo))
+            .Job("测试工程: X-59", Test, 2021, "X-59: QueSST 洛克希德·马丁", srcInfo.pushId)
+            .Job("测试工程: CH-47", Test, 1956, "CH-47: Chinook 波音", srcInfo.pushId))
         .Stages(Stage{ "部署" }
-            .Job("部署环境: 北京", Deploy, "清华大学", srcInfo)
-            .Job("部署环境: 上海", Deploy, "复旦大学", srcInfo)
-            .Job("部署环境: 深圳", Deploy, "深圳大学", srcInfo))
+            .Job("部署环境: 北京", Deploy, "清华大学", srcInfo.pushId)
+            .Job("部署环境: 上海", Deploy, "复旦大学", srcInfo.pushId)
+            .Job("部署环境: 深圳", Deploy, "深圳大学", srcInfo.pushId))
 
         .Run())
         return EXIT_SUCCESS;

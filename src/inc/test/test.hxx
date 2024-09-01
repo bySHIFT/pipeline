@@ -4,9 +4,9 @@
 
 namespace g::test {
 struct _Test_fn {
-    bool operator()(std::size_t projectId
+    bool operator()(const std::string& jobName, std::size_t projectId
         , const std::string_view& description
-        , const g::SourceInfo& sourceInfo
+        , const OptString& pushId
         ) const {
         return true;
     }
