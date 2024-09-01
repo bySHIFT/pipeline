@@ -2,8 +2,8 @@
 #include "inc/source_info.h"
 
 namespace g::build {
-struct _Pull_fn {
-    bool operator()(g::SourceInfo& sourceInfo) const {
+struct _Check_fn {
+    bool operator()(const g::SourceInfo& sourceInfo) const {
         return true;
     }
 };
