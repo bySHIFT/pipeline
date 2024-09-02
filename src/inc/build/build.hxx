@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "inc/source_info.h"
+#include "source_info.h"
 
 namespace g::build {
 namespace internal {
@@ -8,16 +8,17 @@ void Build(g::SourceInfo& sourceInfo) {
 }
 } // end internal namespace
 
-struct _Build_fn {
-    bool operator()(const std::string& jobName, g::SourceInfo& sourceInfo) const {
-        CoutItem(jobName + "信息:");
-        CoutSourceInfo(sourceInfo);
+bool
+Build(const std::string& jobName
+    , g::SourceInfo& sourceInfo
+) {
+    cout::Item(jobName + "信息:");
+    CoutSourceInfo(sourceInfo);
 
-        internal::Build(sourceInfo);
-        CoutItem(jobName + "后信息:");
-        CoutSourceInfo(sourceInfo);
+    internal::Build(sourceInfo);
+    cout::Item(jobName + "后信息:");
+    CoutSourceInfo(sourceInfo);
 
-        return true;
-    }
-};
+    return true;
+}
 } // end g::build namespace
