@@ -94,8 +94,8 @@ private:
 int main() {
     if (g::SourceInfo srcInfo{ .branchName = "release_v1.0" };
         Pipeline{}
-        .Stages(Stage{ "说明" }.Job("一次构建说明"
-            , [](auto&& jobName, auto&& branchName) {
+        .Stages(Stage{ "说明" }
+            .Job("一次构建说明", [](auto&& jobName, auto&& branchName) {
                 g::cout::Item(jobName + "构建版本: " + branchName); }, *srcInfo.branchName))
         .Stages(Stage{ "构建" }
             .Job("获取编译代码", g::build::Pull, srcInfo)

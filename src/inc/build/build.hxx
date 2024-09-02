@@ -12,8 +12,10 @@ bool
 Build(const std::string& jobName
     , g::SourceInfo& sourceInfo
 ) {
+#if 0
     cout::Item(jobName + "信息:");
     CoutSourceInfo(sourceInfo);
+#endif
 
     internal::Build(sourceInfo);
     cout::Item(jobName + "后信息:");
