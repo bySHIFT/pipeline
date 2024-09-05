@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include "source_info.h"
+#include "common.hxx"
 
 namespace g::build {
 namespace internal {
 void Push(g::SourceInfo& sourceInfo) {
-    auto PushId = [] { return uuid::CommitId(); };
+    auto PushId = [] { return random::CommitId(); };
 
     sourceInfo.pushId = PushId();
 }
@@ -15,9 +15,6 @@ Push(const std::string& jobName
     , g::SourceInfo& sourceInfo
 ) {
     internal::Push(sourceInfo);
-    cout::Item(jobName + "后信息:");
-    CoutSourceInfo(sourceInfo);
-
-    return true;
+    return internal::BuildPostActions(jobName, sourceInfo);
 }
 } // end g::build namespace

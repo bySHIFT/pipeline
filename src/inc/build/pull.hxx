@@ -1,10 +1,10 @@
 ﻿#pragma once
-#include "source_info.h"
+#include "common.hxx"
 
 namespace g::build {
 namespace internal {
 void Pull(g::SourceInfo& sourceInfo) {
-    sourceInfo.commitId = uuid::CommitId();
+    sourceInfo.commitId = random::CommitId();
     sourceInfo.date =
 #if 0
         std::format("{}", std::chrono::system_clock::now());
@@ -21,11 +21,7 @@ Pull(const std::string& jobName
     if (!sourceInfo.branchName)
         return false;
 
-    cout::Item(jobName + "分支: " + *sourceInfo.branchName);
     internal::Pull(sourceInfo);
-    cout::Item(jobName + "分支后信息:");
-    CoutSourceInfo(sourceInfo);
-
-    return true;
+    return internal::BuildPostActions(jobName, sourceInfo);
 }
 } // end g::build namespace

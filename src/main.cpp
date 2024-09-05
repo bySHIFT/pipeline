@@ -12,7 +12,7 @@ public:
     }
 
     template<typename _Callable, typename... _Args>
-        requires std::invocable<_Callable&, const std::string&, _Args...>
+        requires std::invocable<_Callable&, const std::string& /*jobName*/, _Args...>
             && IsAnyOf<std::invoke_result_t<_Callable&, const std::string&/*jobName*/, _Args...>
                 , void, bool>
     decltype(auto) Job(const std::string& jobName
@@ -34,21 +34,25 @@ public:
     }
 
     bool operator()(std::size_t noStage, std::size_t cntStages) const {
+        using TypeStatus = std::pair<bool, OptString>;
+
         endl(std::cout);
         g::cout::Stage(stageName, noStage, cntStages);
 
         const auto cnt = jobOperators.size();
+        TypeStatus jobStatus{};
         std::size_t idx = 0;
         for (const auto& job : jobOperators) {
             g::cout::Job(job.first, ++idx, cnt);
-            if (!job.second(job.first))
+            jobStatus.first = job.second(job.first);
+            __g_Unnamed_ScopeExit(g::cout::CoutJobStatus, job.first, jobStatus.first, jobStatus.second);
+            if (!jobStatus.first)
                 return false;
         }
         return true;
     }
 
     inline const std::string& StageName() const { return stageName; }
-
 private:
     std::string stageName{};
     TypeJobNamedOperators jobOperators{};

@@ -1,19 +1,18 @@
 ﻿#pragma once
 #include "cout/cout.hxx"
 #include "ctime/ctime.hxx"
-#include "uuid/uuid.hxx"
+#include "random/random.hxx"
+#include "scope_exit/scope_exit.hxx"
 
 #include <chrono>
 #include <functional>
 #include <iostream>
-#include <optional>
 #include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <vector>
 
-using OptString = std::optional<std::string>;
 using VecString = std::vector<std::string>;
 
 template <class _Ty, class... _Types>

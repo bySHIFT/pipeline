@@ -3,14 +3,21 @@
 #include <random>
 #include <utility>
 
-namespace g::uuid {
+namespace g::random {
+template<class _Ty = int>
 auto
-randomGen() {
+RandomGen(_Ty min, _Ty max) {
     std::random_device rd;  // 将用于为随机数引擎获得种子
     std::mt19937 gen(rd()); // 以播种标准 mersenne_twister_engine
     std::uniform_int_distribution<> dis(0, 0X0F);
 
     return std::make_pair(dis, gen);
+}
+
+inline
+auto
+HexRandomGen() {
+    return RandomGen<char>(0, 0X0F);
 }
 
 // 生成伪UUID
@@ -21,7 +28,7 @@ UUID() {
     const auto SIZE = std::accumulate(parts.begin(), parts.end(), 0)
         + parts.size() - 1;
 
-    auto [dis, gen] = randomGen();
+    auto [dis, gen] = HexRandomGen();
     std::string container(SIZE, '-');
     for (auto i = 0; i < parts.size(); ++i) {
         const auto offset = std::accumulate(parts.begin(), parts.begin() + i, 0) + i;
@@ -41,7 +48,7 @@ std::string
 CommitId() {
     constexpr std::size_t SIZE{ 8 };
 
-    auto [dis, gen] = randomGen();
+    auto [dis, gen] = HexRandomGen();
     std::string container(SIZE, '-');
     for (auto j = 0; j < SIZE; ++j) {
         const auto num = dis(gen);
@@ -53,4 +60,17 @@ CommitId() {
 
     return container;
 }
-} // end g::uuid namespace
+
+bool
+DummyStatus(std::uint8_t ratioSuccessful = 98) {
+    constexpr std::uint8_t MaxRatioSuccessful = 100;
+    if (ratioSuccessful > MaxRatioSuccessful)
+        ratioSuccessful = MaxRatioSuccessful;
+
+    auto [dis, gen] = RandomGen<std::uint8_t>(0, 100);
+    if (const auto current = dis(gen); current >= (MaxRatioSuccessful - ratioSuccessful))
+        return true;
+
+    return false;
+}
+} // end g::random namespace

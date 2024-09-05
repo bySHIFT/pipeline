@@ -3,10 +3,13 @@
 
 #include <algorithm>
 #include <iostream>
+#include <optional>
 #include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
+
+using OptString = std::optional<std::string>;
 
 namespace g::cout {
 template<std::ranges::input_range _Rng>
@@ -25,9 +28,10 @@ Ranges(_Rng&& rng) {
     return std::cout << ss.str();
 }
 
-template<typename _Banner>
+template<typename _Banner, typename _TitleBanner>
 void
-Banner(const _Banner& banner, const std::string_view& tag
+TitleBanner(const _Banner& banner, const _TitleBanner& titleBanner
+    , const std::string_view& tag
     , const std::string& name, std::size_t no, std::size_t cnt) {
     std::stringstream ss;
     ss << banner << std::endl
@@ -35,19 +39,18 @@ Banner(const _Banner& banner, const std::string_view& tag
         << "]: " << name << std::endl;
 
     std::cout << ss.str();
-
 }
 
 inline
 void
 Stage(const std::string& stageName, std::size_t no, std::size_t cnt) {
-    Banner(h1, "阶段", stageName, no, cnt);
+    TitleBanner(h1, titleBannerStage, "阶段", stageName, no, cnt);
 }
 
 inline
 void
 Job(const std::string& jobName, std::size_t no, std::size_t cnt) {
-    Banner(h2, "任务", jobName, no, cnt);
+    TitleBanner(h2, titleBannerJob, "任务", jobName, no, cnt);
 }
 
 inline
@@ -56,4 +59,12 @@ Item(const std::string& item) {
     return std::cout << itemBanner
         << item << std::endl;
 }
+
+inline
+void CoutJobStatus(const std::string& jobName, bool status, const OptString& msg) {
+    std::cout << std::endl
+        << g::itemBannerStatus << "执行状态: " << jobName
+        << (status ? " 成功" : " 失败") << std::endl;
+}
+
 } // end g::cout namespace
