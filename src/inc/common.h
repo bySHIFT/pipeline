@@ -1,16 +1,16 @@
 ﻿#pragma once
 #include "cout/cout.hxx"
-#include "ctime/ctime.hxx"
 #include "random/random.hxx"
 #include "scope_exit/scope_exit.hxx"
 
-#include <chrono>
 #include <functional>
+#include <future>
 #include <iostream>
 #include <ranges>
 #include <sstream>
 #include <string>
 #include <string_view>
+#include <thread>
 #include <vector>
 
 using VecString = std::vector<std::string>;
@@ -25,4 +25,27 @@ auto
 RngForEach(_Rng&& range, _Func&& func, _Args&&... args) {
     return std::ranges::for_each(range, [&](auto&& item) {
         return std::invoke(std::forward<_Func>(func), std::forward<_Args>(args)..., item); });
+}
+
+void
+ElapsedSecondsDummyJob(std::uint8_t max, std::uint8_t min = 0) {
+    using namespace std::chrono_literals;
+
+    g::cout::Item("可能的耗时时间在[" + std::to_string(min) + ", " + std::to_string(max) + "], 单位: 秒");
+    auto [dis, gen] = g::random::RandomGen(min, max);
+    const auto elapsed = dis(gen);
+    auto job = std::async(std::launch::async
+        , [](auto&& seconds) { std::this_thread::sleep_for(std::chrono::seconds(seconds)); }
+        , elapsed);
+
+    std::future_status status{};
+    do {
+        status = job.wait_for(1s);
+        if (std::future_status::timeout == status)
+            std::cout << '.';
+        else if (std::future_status::ready == status)
+            endl(std::cout);
+    } while (std::future_status::ready != status);
+
+    job.get();
 }

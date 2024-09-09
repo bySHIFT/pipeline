@@ -1,7 +1,9 @@
 ﻿#pragma once
 #include "banner/banner.hxx"
+#include "ctime/ctime.hxx"
 
 #include <algorithm>
+#include <chrono>
 #include <iostream>
 #include <optional>
 #include <ranges>
@@ -42,6 +44,13 @@ TitleBanner(const _Banner& banner, const _TitleBanner& titleBanner
 }
 
 inline
+std::ostream&
+Item(const std::string& item) {
+    return std::cout << itemBanner
+        << item << std::endl;
+}
+
+inline
 void
 Stage(const std::string& stageName, std::size_t no, std::size_t cnt) {
     TitleBanner(h1, titleBannerStage, "阶段", stageName, no, cnt);
@@ -51,13 +60,7 @@ inline
 void
 Job(const std::string& jobName, std::size_t no, std::size_t cnt) {
     TitleBanner(h2, titleBannerJob, "任务", jobName, no, cnt);
-}
-
-inline
-std::ostream&
-Item(const std::string& item) {
-    return std::cout << itemBanner
-        << item << std::endl;
+    Item("正在进行" + jobName + "...");
 }
 
 inline
@@ -65,6 +68,14 @@ void CoutJobStatus(const std::string& jobName, bool status, const OptString& msg
     std::cout << std::endl
         << g::itemBannerStatus << "执行状态: " << jobName
         << (status ? " 成功" : " 失败") << std::endl;
+}
+
+void CoutMetrics(const std::string& tagName
+    , const std::chrono::time_point<std::chrono::steady_clock>& start
+) {
+    std::cout << g::itemBannerMetrics << "耗时: " << tagName
+        << " " << g::ctime::FriendlyDuration(start)
+        << std::endl;
 }
 
 } // end g::cout namespace

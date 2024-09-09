@@ -21,6 +21,8 @@ Pull(const std::string& jobName
     if (!sourceInfo.branchName)
         return false;
 
+    ElapsedSecondsDummyJob(4, 2);
+
     internal::Pull(sourceInfo);
     return internal::BuildPostActions(jobName, sourceInfo);
 }

@@ -14,6 +14,8 @@ bool
 Push(const std::string& jobName
     , g::SourceInfo& sourceInfo
 ) {
+    ElapsedSecondsDummyJob(4, 3);
+
     internal::Push(sourceInfo);
     return internal::BuildPostActions(jobName, sourceInfo);
 }

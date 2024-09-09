@@ -2,6 +2,13 @@
 #include "inc/deploy/all.h"
 #include "inc/test/all.h"
 
+template<typename _Callable, typename... _Args>
+using TypeCallableJob = std::invoke_result_t<_Callable&, const std::string&/*jobName*/, _Args...>;
+
+template<typename _Callable, typename... _Args>
+concept CallableJob = std::invocable<_Callable&, const std::string& /*jobName*/, _Args...>
+    && IsAnyOf<TypeCallableJob<_Callable, _Args...>, bool, void>;
+
 class Stage {
 public:
     using TypeJobOperator = std::function<bool(const std::string& /*jobName*/)>;
@@ -11,15 +18,9 @@ public:
     explicit Stage(const std::string& stageName) : stageName{ stageName } {
     }
 
-    template<typename _Callable, typename... _Args>
-        requires std::invocable<_Callable&, const std::string& /*jobName*/, _Args...>
-            && IsAnyOf<std::invoke_result_t<_Callable&, const std::string&/*jobName*/, _Args...>
-                , void, bool>
-    decltype(auto) Job(const std::string& jobName
-        , _Callable&& obj, _Args&&... args
-    ) {
-        if constexpr (std::is_same_v<std::invoke_result_t<_Callable&
-            , const std::string&/*jobName*/, _Args...>, bool>) {
+    template<typename... _Args, CallableJob<_Args...> _Callable>
+    decltype(auto) Job(const std::string& jobName, _Callable&& obj, _Args&&... args) {
+        if constexpr (std::is_same_v<TypeCallableJob<_Callable, _Args...>, bool>) {
             jobOperators.emplace_back(jobName, [&](const std::string& jobName) {
                 return std::invoke(std::forward<_Callable>(obj), jobName
                     , std::forward<_Args>(args)...); });
@@ -36,7 +37,6 @@ public:
     bool operator()(std::size_t noStage, std::size_t cntStages) const {
         using TypeStatus = std::pair<bool, OptString>;
 
-        endl(std::cout);
         g::cout::Stage(stageName, noStage, cntStages);
 
         const auto cnt = jobOperators.size();
@@ -44,6 +44,8 @@ public:
         std::size_t idx = 0;
         for (const auto& job : jobOperators) {
             g::cout::Job(job.first, ++idx, cnt);
+            const auto start = std::chrono::steady_clock::now();
+            __g_Unnamed_ScopeExit(g::cout::CoutMetrics, job.first, start);
             jobStatus.first = job.second(job.first);
             __g_Unnamed_ScopeExit(g::cout::CoutJobStatus, job.first, jobStatus.first, jobStatus.second);
             if (!jobStatus.first)
@@ -69,10 +71,13 @@ public:
 
     [[nodiscard]]
     bool Run() const {
-        coutStageNames();
+        const static std::string pipelineName{ "一次构建流程" };
+        coutStageNames(pipelineName);
 
         const auto cnt = stages.size();
+        const auto start = std::chrono::steady_clock::now();
         std::size_t idx = 0;
+        __g_Unnamed_ScopeExit(g::cout::CoutMetrics, pipelineName, start);
         for (auto& stage : stages)
             if (!stage(++idx, cnt))
                 return false;
@@ -81,14 +86,14 @@ public:
     }
 
 private:
-    void coutStageNames() const {
+    void coutStageNames(const std::string& pipelineName) const {
         std::cout << g::h1 << std::endl
-            << g::itemBanner << "一次构建流程: ";
+            << g::itemBanner << pipelineName << ": ";
         VecString names{};
         RngForEach(stages, [](VecString& nameStages, auto&& stage) {
             nameStages.emplace_back(stage.StageName()); }, names);
 
-        g::cout::Ranges(names);
+        g::cout::Ranges(names) << std::endl;
     }
 
     g::SourceInfo sourceInfo{};

@@ -12,6 +12,8 @@ bool
 Build(const std::string& jobName
     , g::SourceInfo& sourceInfo
 ) {
+    ElapsedSecondsDummyJob(30, 20);
+
     internal::Build(sourceInfo);
     return internal::BuildPostActions(jobName, sourceInfo);
 }
